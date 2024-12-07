@@ -11,10 +11,7 @@ String spotifyCode = "";
 bool authComplete = false;
 
 void setupWifi(void) {
-  Serial.begin(115200);
-  while (!Serial) { // Wait for serial to initialize
-    delay(100);
-  }
+  
 
   pinMode(LED_BUILTIN, OUTPUT);
 
