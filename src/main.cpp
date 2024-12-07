@@ -1,6 +1,7 @@
 #include "wifiSetup.h"
 #include "authorizeSpotify.h"
 #include "fetchSpotify.h"
+#include "landingPage.h"
 #include <TFT_eSPI.h>
 #include <SPI.h>
 
@@ -17,10 +18,12 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE);
   tft.setTextSize(1); 
-  tft.drawString("Hello, world!", 10, 10);
 
   setupWifi(); //Setup WiFi connection with ESP32
-  
+  configureLandingPage(); //Setup the landing page
+
+  tft.drawString(IP_ADDRESS, 10, 10); 
+
   requestUserAuthorization();
   setupWebServerForAuth(); //Setup the web server
 

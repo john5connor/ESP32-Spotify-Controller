@@ -7,6 +7,7 @@
 extern WebServer server;
 extern String spotifyCode;
 extern bool authComplete;
+extern String IP_ADDRESS;
 
 void setupWifi(void);
 void setupWebServerForAuth(void);

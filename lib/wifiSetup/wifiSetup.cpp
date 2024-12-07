@@ -9,6 +9,8 @@
 WebServer server(80);
 String spotifyCode = "";
 bool authComplete = false;
+String IP_ADDRESS = "";
+String REDIRECT_URI;
 
 void setupWifi(void) {
   
@@ -31,11 +33,14 @@ void setupWifi(void) {
 
   Serial.println("Connected! IP address: ");
   Serial.println(WiFi.localIP());
+
+  IP_ADDRESS = WiFi.localIP().toString();
+  REDIRECT_URI = String("http://") + IP_ADDRESS + "/callback"; //Update the redirect URI with the IP address
 }
 
 void setupWebServerForAuth(void) {
-  server.begin();
   server.on("/callback", handleAuthCallback); //Set the ESP32 to listen for the callback
+  server.begin();
   Serial.println("Server started, waiting for Spotify callback...");
 }
 
