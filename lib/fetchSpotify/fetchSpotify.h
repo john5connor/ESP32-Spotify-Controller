@@ -3,6 +3,11 @@
 
 #include <Arduino.h>
 
-String fetchSpotifyPlaylist(String accessToken);
+extern uint8_t* imageBuffer;
+extern size_t imageSize;
+
+String fetchSpotifyPlaylist();
+String fetchPlaybackState();
+bool fetchAndStoreImage(String imageUrl);
 
 #endif

@@ -14,7 +14,7 @@ extern String REDIRECT_URI;
 extern const char* RESPONSE_TYPE;
 extern const char* SCOPE;
 extern const char* SPOTIFY_API_URL;
-extern const char* SPOTIFY_ACCESS_TOKEN;
+extern String SPOTIFY_ACCESS_TOKEN;
 extern const char* GRANT_TYPE;
 
 #endif

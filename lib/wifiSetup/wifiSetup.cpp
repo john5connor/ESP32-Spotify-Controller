@@ -13,12 +13,8 @@ String IP_ADDRESS = "";
 String REDIRECT_URI;
 
 void setupWifi(void) {
-  
 
   pinMode(LED_BUILTIN, OUTPUT);
-
-  Serial.println("Connecting to");
-  Serial.println(WIFI_SSID);
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD); //Connect to the WiFi network
 
@@ -31,9 +27,6 @@ void setupWifi(void) {
 
   digitalWrite(LED_BUILTIN, HIGH); //Turn on LED when we are connected
 
-  Serial.println("Connected! IP address: ");
-  Serial.println(WiFi.localIP());
-
   IP_ADDRESS = WiFi.localIP().toString();
   REDIRECT_URI = String("http://") + IP_ADDRESS + "/callback"; //Update the redirect URI with the IP address
 }
@@ -41,7 +34,6 @@ void setupWifi(void) {
 void setupWebServerForAuth(void) {
   server.on("/callback", handleAuthCallback); //Set the ESP32 to listen for the callback
   server.begin();
-  Serial.println("Server started, waiting for Spotify callback...");
 }
 
 void handleAuthCallback(void) {

@@ -1,12 +1,12 @@
 #include "authorizeSpotify.h"
 #include "config.h"
-#include <Arduino.h>
+#include "jsonParse.h"
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
-#include <ArduinoJson.h>
 
 String base64Encode(String str);
-String parseAccessToken(String response);
+
+String SPOTIFY_ACCESS_TOKEN;
 
 String requestUserAuthorization(void) {
     String state = generateRandomString(16); //Generate a random string to protect against CSRF attacks
@@ -53,14 +53,13 @@ String requestAccessToken(String code) {
             if (httpCode == HTTP_CODE_OK) {
                 response = https.getString();
             }
-        } else {
-            Serial.printf("HTTP POST request failed, error: %s\n", https.errorToString(httpCode).c_str());
-        }
+        } 
         https.end();
-    } else {
-        Serial.println("Unable to connect to Spotify API");
-    }
-    return parseAccessToken(response);
+    } 
+
+    SPOTIFY_ACCESS_TOKEN = parseAccessToken(response);
+
+    return SPOTIFY_ACCESS_TOKEN;
 }
 
 String generateRandomString(uint8_t len) {
@@ -120,23 +119,4 @@ String base64Encode(String str) {
     }
 
     return encoded;
-}
-
-String parseAccessToken(String response) {
-    DynamicJsonDocument doc(200); //Create a JSON document to parse the response
-
-    DeserializationError error = deserializeJson(doc, response); //Deserialize the response
-
-    if (error) {
-        Serial.print("Failed to parse access token response: ");
-        Serial.println(error.c_str());
-        return "";
-    }
-
-    const char* accessToken = doc["access_token"]; //Extract the access token from the JSON response
-
-    Serial.println("Parsed access token:");
-    Serial.println(accessToken);
-
-    return String(accessToken);
 }

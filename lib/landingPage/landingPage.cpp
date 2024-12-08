@@ -1,3 +1,4 @@
+/*
 #include "landingPage.h"
 #include "wifiSetup.h"
 #include "Preferences.h"
@@ -50,3 +51,4 @@ void configureLandingPage(void) {
     server.on("/", handleLandingPage);
     server.on("/save", handleSave);
 }
+*/
