@@ -8,7 +8,7 @@ String base64Encode(String str);
 
 String SPOTIFY_ACCESS_TOKEN;
 
-String requestUserAuthorization(void) {
+void requestUserAuthorization(void) {
     String state = generateRandomString(16); //Generate a random string to protect against CSRF attacks
 
     String url = "https://accounts.spotify.com/authorize?"; //Base URL, followed by query parameters
@@ -22,19 +22,14 @@ String requestUserAuthorization(void) {
     //The link must be manually accessed by the user, the ESP32 is unable to emulate a browser and automatically follow the redirect
     Serial.println("Click the following link to authorize with the Spotify API:");
     Serial.println(url);
-
-    return url;
 }
 
-String requestAccessToken(String code) {
+void requestAccessToken(String code) {
     String url = "https://accounts.spotify.com/api/token"; //URL for the Spotify API token endpoint
-
-    WiFiClientSecure client;
-    client.setInsecure(); //Ignore SSL certificate
 
     HTTPClient https;
     String response;
-    if (https.begin(client, url)) {
+    if (https.begin(url)) {
         //Setup headers for POST request
         String payload = "code=" + code +
                          "&redirect_uri=" + String(REDIRECT_URI) +
@@ -46,20 +41,27 @@ String requestAccessToken(String code) {
         https.addHeader("Authorization", authHeader);
         https.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
+        Serial.println("Payload: " + payload);
+
         //Execute the POST request
         int httpCode = https.POST(payload);
 
         if (httpCode > 0) {
             if (httpCode == HTTP_CODE_OK) {
+                Serial.println("Successfully received access token.");
                 response = https.getString();
+            } else {
+                Serial.println("Failed to receive access token." + httpCode);
             }
-        } 
+        } else {
+            Serial.println("Failed to connect to Spotify API: " + httpCode);
+        }
         https.end();
     } 
 
-    SPOTIFY_ACCESS_TOKEN = parseAccessToken(response);
+    parseAccessToken(response);
 
-    return SPOTIFY_ACCESS_TOKEN;
+    Serial.println("Parsed token: " + SPOTIFY_ACCESS_TOKEN);
 }
 
 String generateRandomString(uint8_t len) {

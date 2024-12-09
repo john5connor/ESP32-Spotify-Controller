@@ -3,11 +3,20 @@
 #include "fetchSpotify.h"
 #include "landingPage.h"
 #include "jsonParse.h"
+#include "player.h"
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include <TJpg_Decoder.h>
 
 TFT_eSPI tft = TFT_eSPI(); // Create an instance of TFT_eSPI
+//TFT_eSprite scroller = TFT_eSprite(&tft); // Create an instance of TFT_eSprite
+
+/*
+const char* message = "Text message for scroll";
+int msgWidth;
+int scrollX;
+*/
+String playbackStateJson;
 
 void displayJPEG();
 
@@ -20,8 +29,26 @@ void setup() {
   tft.init();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
-  tft.setTextColor(TFT_WHITE);
-  tft.setTextSize(1); 
+  tft.setSwapBytes(true);
+  tft.setTextFont(1);
+  tft.setTextSize(1);
+  /*
+  tft.setTextWrap(false);
+
+  msgWidth = tft.textWidth(message);
+
+  scroller.setColorDepth(8);
+  scroller.createSprite(msgWidth * 2, tft.fontHeight());
+  scroller.fillSprite(TFT_BLACK);
+  scroller.setTextColor(TFT_WHITE, TFT_BLACK);
+  scroller.setTextDatum(TL_DATUM);
+
+  scroller.drawString(message, 0, 0);
+  scroller.drawString(message, msgWidth, 0);
+
+  scrollX = 0;
+  */
+
 
   setupWifi(); //Setup WiFi connection with ESP32
 
@@ -37,20 +64,53 @@ void setup() {
     server.handleClient();
   }
 
-  String accessToken = requestAccessToken(spotifyCode);
-  //String playlist = fetchSpotifyPlaylist();
-  String playbackState = fetchPlaybackState();
+  requestAccessToken(spotifyCode); //Request an access token from the Spotify API
+  playbackStateJson = fetchPlaybackState(); //Fetch the playback state from the Spotify API
+  //doDeserializeJson(playbackStateJson); //Deserialize the JSON response to be used within several parsing methods
 
-  if (fetchAndStoreImage(parseImageUrl(playbackState))) {
+  Serial.println("Got playback state:\n " + playbackStateJson); 
+
+  //String devices = parseAvailableDevices(fetchAvailableDevices());
+  //parseImageUrl(playbackStateJson);
+
+
+  /*
+  if (fetchAndStoreImage(imageUrl)) {
     displayJPEG();
   }
+  parseSong(playbackStateJson);
+  parseArtists(playbackStateJson);
 
-  tft.drawString(parseArtists(playbackState), tft.width() / 8, tft.height() - 30);
+  if (song != nullptr) {
+    Serial.println("Song not null!");
+  }
 
+  //uint8_t songLen = strlen(song.c_str());
+  //size_t artistsLen = strlen(artists.c_str());
+
+  tft.drawString(song, (tft.width() / 2) - (song.length() / 2) * 6, tft.height() - 55);
+  tft.drawString(artists, (tft.width() / 2) - (artists.length() / 2) * 6, tft.height() - 40);
+  */
 }
 
 void loop() {
-  // do nothing for now
+  delay(5000);
+  //Serial.println("Pausing/playing song");
+  //if (playPausePressed())...
+  //playPauseSong(playbackStateJson);
+  /*
+  tft.fillScreen(TFT_BLACK);
+  int spriteY = (tft.height() - tft.fontHeight()) / 2; // Vertically center the sprite
+
+  scroller.pushSprite(-scrollX, spriteY);
+
+  scrollX++;
+  if (scrollX >= msgWidth) {
+    scrollX = 0;
+  }
+  
+  delay(25);
+  */
 }
 
 bool outputTFT(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap) {
@@ -65,7 +125,7 @@ void displayJPEG() {
   if (imageBuffer) {
     TJpgDec.setCallback(outputTFT);
     TJpgDec.setSwapBytes(true);
-    TJpgDec.drawJpg(tft.width() / 4, tft.height() / 4, imageBuffer, imageSize);
+    TJpgDec.drawJpg(tft.width() / 4, tft.height() / 10, imageBuffer, imageSize);
 
     free(imageBuffer);
     imageBuffer = nullptr;

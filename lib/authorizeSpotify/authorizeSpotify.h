@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <Arduino.h>
 
-String requestUserAuthorization(void);
-String requestAccessToken(String code); 
+void requestUserAuthorization(void);
+void requestAccessToken(String code); 
 String generateRandomString(uint8_t state); 
 
 #endif

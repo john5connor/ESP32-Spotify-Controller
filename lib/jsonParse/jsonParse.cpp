@@ -1,30 +1,48 @@
+#include "jsonParse.h"
+#include "config.h"
 #include <ArduinoJson.h>
 
-String parseAccessToken(String response) {
+const char* imageUrl;
+String artists;
+String song;
+String deviceId;
+
+/*
+void doDeserializeJson(String json) {
+    doc.clear();
+
+    DeserializationError error = deserializeJson(doc, json);
+
+    if (error) {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.c_str());
+        return;
+    }
+}
+*/
+
+void parseAccessToken(String response) {
+    Serial.println("Parsing access token: " + response);
     StaticJsonDocument<100> doc;
-
-    deserializeJson(doc, response); //Deserialize the response
-
+    deserializeJson(doc, response);
     //const char* accessToken = doc["access_token"]; //Extract the access token from the JSON response
-
-    return String((const char*)doc["access_token"]);
+    if (doc["access_token"] == nullptr) {
+        Serial.println("Access token is null");
+    }
+    SPOTIFY_ACCESS_TOKEN = String((const char*)doc["access_token"]);
 }
 
-String parseImageUrl(String playbackState) {
-    StaticJsonDocument<100> doc; //Create a JSON document to parse the response
-
-    deserializeJson(doc, playbackState); //Deserialize the response
-
+void parseImageUrl(String playbackStateJson) {
+    StaticJsonDocument<100> doc;
+    deserializeJson(doc, playbackStateJson);
     //const char* imageUrl = doc["item"]["album"]["images"][2]["url"]; //Extract the image URL from the JSON response
-
-    return String((const char*)doc["item"]["album"]["images"][2]["url"]);
+    imageUrl = (const char*)doc["item"]["album"]["images"][2]["url"];
 }
 
-String parseArtists(String playbackState) {
-    StaticJsonDocument<100> doc; //Create a JSON document to parse the response
-
-    deserializeJson(doc, playbackState); //Deserialize the response
-
+void parseArtists(String playbackStateJson) {
+    StaticJsonDocument<100> doc;
+    deserializeJson(doc, playbackStateJson);
+    /*
     uint8_t artistCount = doc["item"]["artists"].size(); //Get the number of artists on the track
 
     if (artistCount == 1) {
@@ -39,6 +57,18 @@ String parseArtists(String playbackState) {
         }
         return artists;
     }
+    */
+    artists = String((const char*)doc["item"]["artists"][0]["name"]);
+}
 
-    return String((const char*)doc["item"]["artists"][0]["name"]);
+void parseSong(String playbackStateJson) {
+    StaticJsonDocument<100> doc;
+    deserializeJson(doc, playbackStateJson);
+    song = String((const char*)doc["item"]["name"]);
+}
+
+void parseAvailableDevices(String devicesJson) {
+    StaticJsonDocument<100> doc;
+    deserializeJson(doc, devicesJson);
+    deviceId = String((const char*)doc["devices"][0]["id"]);
 }

@@ -8,6 +8,7 @@ extern size_t imageSize;
 
 String fetchSpotifyPlaylist();
 String fetchPlaybackState();
-bool fetchAndStoreImage(String imageUrl);
+bool fetchAndStoreImage(const char* imageUrl);
+String fetchAvailableDevices();
 
 #endif
