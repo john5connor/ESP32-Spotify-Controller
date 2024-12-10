@@ -9,6 +9,7 @@ void playPauseSong(String playbackStateJson) {
     deserializeJson(doc, playbackStateJson); 
 
     bool isPlaying = doc["is_playing"];
+
     Serial.println("Is playing: ");
     Serial.println(isPlaying);
 
@@ -20,19 +21,19 @@ void playPauseSong(String playbackStateJson) {
     payload.replace(String("{CONTEXT_URI}"), String(doc["item"]["album"]["uri"].as<const char*>()));
     payload.replace(String("{POSITION_MS}"), String(doc["progress_ms"].as<long>()));
 
+    HTTPClient http;
+
     if (isPlaying) {
-        Serial.println("Pausing song...");
-        HTTPClient http;
-
         http.begin("https://api.spotify.com/v1/me/player/pause");
-
-        http.addHeader("Authorization", "Bearer " + SPOTIFY_ACCESS_TOKEN);
-        http.addHeader("Content-Type", "application/json");
-
-        uint8_t httpCode = http.PUT(payload);
-
-        http.end();
     } else {
-        Serial.println("Playing song...");
+        http.begin("https://api.spotify.com/v1/me/player/play");
     }
+
+    http.addHeader("Authorization", "Bearer " + SPOTIFY_ACCESS_TOKEN);
+    http.addHeader("Content-Type", "application/json");
+
+    Serial.println("Pausing/playing song!");
+    uint8_t httpCode = http.PUT(payload);
+
+    http.end();
 }

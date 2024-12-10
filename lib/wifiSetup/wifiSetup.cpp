@@ -17,6 +17,7 @@ void setupWifi(void) {
   pinMode(LED_BUILTIN, OUTPUT);
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD); //Connect to the WiFi network
+  Serial.println("Connecting to: " + String(WIFI_SSID));
 
   while (WiFi.status() != WL_CONNECTED) { //Flash LED while we wait to connect
     digitalWrite(LED_BUILTIN, HIGH);
@@ -24,10 +25,12 @@ void setupWifi(void) {
     digitalWrite(LED_BUILTIN, LOW);
     delay(500);
   }
+
   Serial.printf("Signal strength: %d dBm\n", WiFi.RSSI());
   digitalWrite(LED_BUILTIN, HIGH); //Turn on LED when we are connected
 
   IP_ADDRESS = WiFi.localIP().toString();
+  Serial.println("IP address: " + IP_ADDRESS);
   REDIRECT_URI = String("http://") + IP_ADDRESS + "/callback"; //Update the redirect URI with the IP address
 }
 
@@ -38,6 +41,7 @@ void setupWebServerForAuth(void) {
 }
 
 void handleAuthCallback(void) {
+  Serial.println("Handling auth callback...");
   if (server.hasArg("code")) { //Check if the code parameter is present
     spotifyCode = server.arg("code"); //Store the code parameter 
     server.send(200, "text/plain", "Success! You can now close this window.");

@@ -29,7 +29,6 @@ void setup() {
   tft.init();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
-  tft.setSwapBytes(true);
   tft.setTextFont(1);
   tft.setTextSize(1);
   /*
@@ -66,18 +65,15 @@ void setup() {
 
   requestAccessToken(spotifyCode); //Request an access token from the Spotify API
   playbackStateJson = fetchPlaybackState(); //Fetch the playback state from the Spotify API
-  //doDeserializeJson(playbackStateJson); //Deserialize the JSON response to be used within several parsing methods
 
-  Serial.println("Got playback state:\n " + playbackStateJson); 
+  parseAvailableDevices(fetchAvailableDevices());
+  parseImageUrl(playbackStateJson);
 
-  //String devices = parseAvailableDevices(fetchAvailableDevices());
-  //parseImageUrl(playbackStateJson);
-
-
-  /*
+  
   if (fetchAndStoreImage(imageUrl)) {
     displayJPEG();
   }
+
   parseSong(playbackStateJson);
   parseArtists(playbackStateJson);
 
@@ -85,19 +81,15 @@ void setup() {
     Serial.println("Song not null!");
   }
 
-  //uint8_t songLen = strlen(song.c_str());
-  //size_t artistsLen = strlen(artists.c_str());
-
   tft.drawString(song, (tft.width() / 2) - (song.length() / 2) * 6, tft.height() - 55);
-  tft.drawString(artists, (tft.width() / 2) - (artists.length() / 2) * 6, tft.height() - 40);
-  */
+  tft.drawString(artists, (tft.width() / 2) - (artists.length() / 2) * 6, tft.height() - 43);
+  
 }
 
 void loop() {
   delay(5000);
-  //Serial.println("Pausing/playing song");
   //if (playPausePressed())...
-  //playPauseSong(playbackStateJson);
+  //playPauseSong(fetchPlaybackState());
   /*
   tft.fillScreen(TFT_BLACK);
   int spriteY = (tft.height() - tft.fontHeight()) / 2; // Vertically center the sprite

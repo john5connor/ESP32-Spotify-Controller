@@ -27,9 +27,13 @@ void requestUserAuthorization(void) {
 void requestAccessToken(String code) {
     String url = "https://accounts.spotify.com/api/token"; //URL for the Spotify API token endpoint
 
+    WiFiClientSecure client;
+    client.setInsecure();
+
     HTTPClient https;
+
     String response;
-    if (https.begin(url)) {
+    if (https.begin(client, url)) {
         //Setup headers for POST request
         String payload = "code=" + code +
                          "&redirect_uri=" + String(REDIRECT_URI) +
@@ -54,7 +58,7 @@ void requestAccessToken(String code) {
                 Serial.println("Failed to receive access token." + httpCode);
             }
         } else {
-            Serial.println("Failed to connect to Spotify API: " + httpCode);
+            Serial.printf("HTTP request for access token failed with error: %s\n", https.errorToString(httpCode).c_str());
         }
         https.end();
     } 

@@ -71,4 +71,5 @@ void parseAvailableDevices(String devicesJson) {
     StaticJsonDocument<100> doc;
     deserializeJson(doc, devicesJson);
     deviceId = String((const char*)doc["devices"][0]["id"]);
+    Serial.println("Device ID: " + deviceId);
 }
