@@ -4,6 +4,7 @@
 #include "landingPage.h"
 #include "jsonParse.h"
 #include "player.h"
+#include "mechanics.h"
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include <TJpg_Decoder.h>
@@ -80,15 +81,17 @@ void setup() {
   if (song != nullptr) {
     Serial.println("Song not null!");
   }
-
+  //TODO: Put this functionality in the loop so it updates the display when the song is changed
   tft.drawString(song, (tft.width() / 2) - (song.length() / 2) * 6, tft.height() - 55);
   tft.drawString(artists, (tft.width() / 2) - (artists.length() / 2) * 6, tft.height() - 43);
   
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
 }
 
 void loop() {
-  delay(5000);
-  //if (playPausePressed())...
+  if (playPauseButtonPressed()) {
+    playPauseSong(fetchPlaybackState());
+  }
   //playPauseSong(fetchPlaybackState());
   /*
   tft.fillScreen(TFT_BLACK);

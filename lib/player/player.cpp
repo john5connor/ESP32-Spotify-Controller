@@ -25,14 +25,15 @@ void playPauseSong(String playbackStateJson) {
 
     if (isPlaying) {
         http.begin("https://api.spotify.com/v1/me/player/pause");
+        Serial.println("Pausing song");
     } else {
         http.begin("https://api.spotify.com/v1/me/player/play");
+        Serial.println("Playing song");
     }
 
     http.addHeader("Authorization", "Bearer " + SPOTIFY_ACCESS_TOKEN);
     http.addHeader("Content-Type", "application/json");
 
-    Serial.println("Pausing/playing song!");
     uint8_t httpCode = http.PUT(payload);
 
     http.end();
