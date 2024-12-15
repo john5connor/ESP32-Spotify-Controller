@@ -1,10 +1,14 @@
 #include "fetchSpotify.h"
 #include "config.h"
+#include "jsonParse.h"
 #include <HTTPClient.h>
 #include <WiFiClient.h>
 
 uint8_t* imageBuffer = nullptr;
 size_t imageSize = 0;
+String playbackStateJson;
+unsigned long lastFetchTime = 0;
+const unsigned long cacheDuration = 5000; // Cooldown period in milliseconds
 
 String fetchSpotifyPlaylist() {
   String url = String(SPOTIFY_API_URL); //URL for the Spotify API playlist endpoint
@@ -52,7 +56,8 @@ String fetchPlaybackState() {
       if (httpCode == HTTP_CODE_OK) {
         response = https.getString();
       } else {
-        Serial.printf("Bad code via HTTP request for playback-state failed with error: %s\n", https.errorToString(httpCode).c_str());
+        Serial.printf("httpCode for failed playback-state request: %d\nTransferring playback...", httpCode);
+        transferPlayback(deviceId);
       }
     } else {
       Serial.printf("HTTP request for playback-state failed with error: %s\n", https.errorToString(httpCode).c_str());
@@ -62,7 +67,16 @@ String fetchPlaybackState() {
   return response;
 }
 
-bool fetchAndStoreImage(const char* imageUrl) {
+String getCachedPlaybackState() {
+  if (millis() - lastFetchTime > cacheDuration) {
+    playbackStateJson = fetchPlaybackState();
+    Serial.println("Playback state cache updated.");
+    lastFetchTime = millis();
+  }
+  return playbackStateJson;
+}
+
+bool fetchAndStoreImage(String imageUrl) {
   HTTPClient https;
 
   if (https.begin(imageUrl)) {
@@ -118,4 +132,24 @@ String fetchAvailableDevices() {
   }
   Serial.println("Devices response: " + response);
   return response;
+}
+
+void transferPlayback(String deviceId) {
+    const String url = "https://api.spotify.com/v1/me/player";
+
+    HTTPClient https;
+    if (https.begin(url)) {
+        https.addHeader("Authorization", "Bearer " + SPOTIFY_ACCESS_TOKEN);
+        https.addHeader("Content-Type", "application/json");
+
+        String data = "{\"device_ids\": [\"" + deviceId + "\"], \"play\": true}";
+
+        uint8_t httpCode = https.PUT(data);
+
+        if (httpCode == HTTP_CODE_OK) {
+            Serial.println("Playback transferred to device");
+        } else {
+            Serial.printf("Failed to transfer playback with error: %d\n", httpCode);
+        }
+    }
 }

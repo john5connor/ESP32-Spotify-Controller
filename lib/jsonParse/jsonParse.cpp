@@ -2,7 +2,7 @@
 #include "config.h"
 #include <ArduinoJson.h>
 
-const char* imageUrl;
+String imageUrl;
 String artists;
 String song;
 String deviceId;
@@ -37,6 +37,7 @@ void parseImageUrl(String playbackStateJson) {
     deserializeJson(doc, playbackStateJson);
     //const char* imageUrl = doc["item"]["album"]["images"][2]["url"]; //Extract the image URL from the JSON response
     imageUrl = (const char*)doc["item"]["album"]["images"][2]["url"];
+    Serial.println("Image url: " + imageUrl);
 }
 
 void parseArtists(String playbackStateJson) {
@@ -70,6 +71,16 @@ void parseSong(String playbackStateJson) {
 void parseAvailableDevices(String devicesJson) {
     StaticJsonDocument<100> doc;
     deserializeJson(doc, devicesJson);
-    deviceId = String((const char*)doc["devices"][0]["id"]);
+
+    if (doc["devices"].size() > 1) {
+        for (int i = 0; i < doc["devices"].size(); i++) {
+            if (String((const char*)doc["devices"][i]["name"]) == "iPhone") {
+                deviceId = String((const char*)doc["devices"][i]["id"]);
+            }
+        }
+    } else {
+        deviceId = String((const char*)doc["devices"][0]["id"]);
+    }
+
     Serial.println("Device ID: " + deviceId);
 }

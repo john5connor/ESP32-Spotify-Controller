@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+void previousSong();
 void playPauseSong(String playbackStateJson);
+void nextSong();
 
 #endif

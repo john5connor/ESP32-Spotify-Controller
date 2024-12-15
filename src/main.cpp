@@ -1,3 +1,4 @@
+#include "config.h"
 #include "wifiSetup.h"
 #include "authorizeSpotify.h"
 #include "fetchSpotify.h"
@@ -17,9 +18,10 @@ const char* message = "Text message for scroll";
 int msgWidth;
 int scrollX;
 */
-String playbackStateJson;
 
+void updateScreen(String playbackStateJson);
 void displayJPEG();
+uint8_t fetchCount = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -52,11 +54,13 @@ void setup() {
 
   setupWifi(); //Setup WiFi connection with ESP32
 
+  Serial.println(playbackStateJson);
   // The following two lines may be be used in the future when implementing the landing page.
   // Currently unsure how it will be implemented.
   //configureLandingPage();
   //tft.drawString(IP_ADDRESS, 10, 10); 
 
+  
   requestUserAuthorization();
   setupWebServerForAuth(); //Setup the web server
 
@@ -65,34 +69,67 @@ void setup() {
   }
 
   requestAccessToken(spotifyCode); //Request an access token from the Spotify API
-  playbackStateJson = fetchPlaybackState(); //Fetch the playback state from the Spotify API
-
   parseAvailableDevices(fetchAvailableDevices());
-  parseImageUrl(playbackStateJson);
 
-  
-  if (fetchAndStoreImage(imageUrl)) {
-    displayJPEG();
+  playbackStateJson = fetchPlaybackState(); //Fetch the playback state from the Spotify API
+  lastFetchTime = millis();
+  Serial.println("Playback state json from setup code: " + playbackStateJson);
+
+  if (playbackStateJson == "") {
+    Serial.println("Playback state is empty, transferring playback to device");
+    transferPlayback(deviceId);
   }
 
-  parseSong(playbackStateJson);
-  parseArtists(playbackStateJson);
+  updateScreen(playbackStateJson);
 
-  if (song != nullptr) {
-    Serial.println("Song not null!");
-  }
-  //TODO: Put this functionality in the loop so it updates the display when the song is changed
-  tft.drawString(song, (tft.width() / 2) - (song.length() / 2) * 6, tft.height() - 55);
-  tft.drawString(artists, (tft.width() / 2) - (artists.length() / 2) * 6, tft.height() - 43);
-  
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(PREVIOUS_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(PLAY_PAUSE_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(NEXT_BUTTON_PIN, INPUT_PULLUP);
 }
 
 void loop() {
-  if (playPauseButtonPressed()) {
-    playPauseSong(fetchPlaybackState());
+  static unsigned long lastPlayPauseTime = 0;
+  static unsigned long lastPreviousTime = 0;
+  static unsigned long lastNextTime = 0;
+  const unsigned long apiCooldown = 500; // Cooldown period in milliseconds
+
+  playbackStateJson = getCachedPlaybackState(); // Constantly update/cache the playback state from the Spotify API
+
+  if (previousButtonPressed()) {
+      unsigned long currentTime = millis();
+      if (currentTime - lastPreviousTime > apiCooldown) {
+          previousSong();
+          playbackStateJson = fetchPlaybackState(); // Get updated playback-state when song is changed
+          updateScreen(playbackStateJson);
+          lastPreviousTime = currentTime;
+      } else {
+          Serial.println("API call ignored due to cooldown");
+      }
   }
-  //playPauseSong(fetchPlaybackState());
+
+  if (playPauseButtonPressed()) {
+      unsigned long currentTime = millis();
+      if (currentTime - lastPlayPauseTime > apiCooldown) {
+          playPauseSong(playbackStateJson);
+          updateScreen(playbackStateJson);
+          lastPlayPauseTime = currentTime;
+      } else {
+          Serial.println("API call ignored due to cooldown");
+      }
+  }
+
+  if (nextButtonPressed()) {
+      unsigned long currentTime = millis();
+      if (currentTime - lastNextTime > apiCooldown) {
+          nextSong();
+          playbackStateJson = fetchPlaybackState(); // Get updated playback-state when song is changed
+          updateScreen(playbackStateJson);
+          lastNextTime = currentTime;
+      } else {
+          Serial.println("API call ignored due to cooldown");
+      }
+  }
+  
   /*
   tft.fillScreen(TFT_BLACK);
   int spriteY = (tft.height() - tft.fontHeight()) / 2; // Vertically center the sprite
@@ -125,4 +162,22 @@ void displayJPEG() {
     free(imageBuffer);
     imageBuffer = nullptr;
   } 
+}
+
+void updateScreen(String playbackStateJson) {
+
+  //parseAvailableDevices(fetchAvailableDevices());
+  tft.fillScreen(TFT_BLACK);
+  parseImageUrl(playbackStateJson);
+
+  if (fetchAndStoreImage(imageUrl)) {
+    displayJPEG();
+  }
+
+  parseSong(playbackStateJson);
+  parseArtists(playbackStateJson);
+  
+  //TODO: Put this functionality in the loop so it updates the display when the song is changed
+  tft.drawString(song, (tft.width() / 2) - (song.length() / 2) * 6, tft.height() - 55);
+  tft.drawString(artists, (tft.width() / 2) - (artists.length() / 2) * 6, tft.height() - 43);
 }

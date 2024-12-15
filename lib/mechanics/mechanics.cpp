@@ -1,25 +1,96 @@
 #include "mechanics.h"
 
-const uint8_t BUTTON_PIN = 27;
+const uint8_t PREVIOUS_BUTTON_PIN = 25;
+const uint8_t PLAY_PAUSE_BUTTON_PIN = 26;
+const uint8_t NEXT_BUTTON_PIN = 27;
 
-bool playPauseButtonPressed(void) {
-    static unsigned long lastDebounceTime = 0;
-    const unsigned long debounceDelay = 100;
+bool previousButtonPressed(void) {
+    //static unsigned long lastDebounceTime = 0;
+    //const unsigned long debounceDelay = 100;
 
     static uint8_t lastState = HIGH;
-    uint8_t currentState = digitalRead(BUTTON_PIN);
-
+    uint8_t currentState = digitalRead(PREVIOUS_BUTTON_PIN);
+    //Serial.printf("Current state: %d", currentState);
+    
+    /*
     if (currentState != lastState) {
         lastDebounceTime = millis();
     }
-
+    
     if ((millis() - lastDebounceTime) > debounceDelay) {
         if (lastState == HIGH && currentState == LOW) {
             lastState = currentState;
             return true;
         } 
     }
+    */ 
+    
+    if (lastState == HIGH && currentState == LOW) {
+        lastState = currentState;
+        return true;
+    }
 
     lastState = currentState;
     return false;
 }
+
+bool playPauseButtonPressed(void) {
+    //static unsigned long lastDebounceTime = 0;
+    //const unsigned long debounceDelay = 100;
+
+    static uint8_t lastState = HIGH;
+    uint8_t currentState = digitalRead(PLAY_PAUSE_BUTTON_PIN);
+    //Serial.printf("Current state: %d", currentState);
+    
+    /*
+    if (currentState != lastState) {
+        lastDebounceTime = millis();
+    }
+    
+    if ((millis() - lastDebounceTime) > debounceDelay) {
+        if (lastState == HIGH && currentState == LOW) {
+            lastState = currentState;
+            return true;
+        } 
+    }
+    */ 
+    
+    if (lastState == HIGH && currentState == LOW) {
+        lastState = currentState;
+        return true;
+    }
+
+    lastState = currentState;
+    return false;
+}
+
+bool nextButtonPressed(void) {
+    //static unsigned long lastDebounceTime = 0;
+    //const unsigned long debounceDelay = 100;
+
+    static uint8_t lastState = HIGH;
+    uint8_t currentState = digitalRead(NEXT_BUTTON_PIN);
+    //Serial.printf("Current state: %d", currentState);
+    
+    /*
+    if (currentState != lastState) {
+        lastDebounceTime = millis();
+    }
+    
+    if ((millis() - lastDebounceTime) > debounceDelay) {
+        if (lastState == HIGH && currentState == LOW) {
+            lastState = currentState;
+            return true;
+        } 
+    }
+    */ 
+    
+    if (lastState == HIGH && currentState == LOW) {
+        lastState = currentState;
+        return true;
+    }
+
+    lastState = currentState;
+    return false;
+}
+

@@ -4,10 +4,9 @@
 
 #include <Arduino.h>
 
-extern const char* imageUrl;
+extern String imageUrl;
 extern String artists;
 extern String song;
-extern String deviceId;
 
 void doDeserializeJson(String json);
 void parseAccessToken(String response);
