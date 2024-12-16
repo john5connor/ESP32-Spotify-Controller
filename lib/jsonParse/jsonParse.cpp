@@ -35,7 +35,6 @@ void parseAccessToken(String response) {
 void parseImageUrl(String playbackStateJson) {
     StaticJsonDocument<100> doc;
     deserializeJson(doc, playbackStateJson);
-    //const char* imageUrl = doc["item"]["album"]["images"][2]["url"]; //Extract the image URL from the JSON response
     imageUrl = (const char*)doc["item"]["album"]["images"][2]["url"];
     Serial.println("Image url: " + imageUrl);
 }
@@ -83,4 +82,10 @@ void parseAvailableDevices(String devicesJson) {
     }
 
     Serial.println("Device ID: " + deviceId);
+}
+
+String parseLastSong(String playbackStateJson) {
+    StaticJsonDocument<50> doc;
+    deserializeJson(doc, playbackStateJson);
+    return String((const char*)doc["item"]["name"]);
 }

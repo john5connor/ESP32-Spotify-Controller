@@ -14,3 +14,4 @@ void parseImageUrl(String playbackStateJson);
 void parseArtists(String playbackStateJson);
 void parseSong(String playbackStateJson);
 void parseAvailableDevices(String devicesJson);
+String parseLastSong(String playbackStateJson);

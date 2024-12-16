@@ -91,16 +91,22 @@ void loop() {
   static unsigned long lastPlayPauseTime = 0;
   static unsigned long lastPreviousTime = 0;
   static unsigned long lastNextTime = 0;
+  static String lastSong = "";
   const unsigned long apiCooldown = 500; // Cooldown period in milliseconds
 
   playbackStateJson = getCachedPlaybackState(); // Constantly update/cache the playback state from the Spotify API
+
+  if (songChange(lastSong, playbackStateJson)) {
+    updateScreen(playbackStateJson);
+  }
+   
+  lastSong = parseLastSong(playbackStateJson);
 
   if (previousButtonPressed()) {
       unsigned long currentTime = millis();
       if (currentTime - lastPreviousTime > apiCooldown) {
           previousSong();
           playbackStateJson = fetchPlaybackState(); // Get updated playback-state when song is changed
-          updateScreen(playbackStateJson);
           lastPreviousTime = currentTime;
       } else {
           Serial.println("API call ignored due to cooldown");
@@ -111,7 +117,6 @@ void loop() {
       unsigned long currentTime = millis();
       if (currentTime - lastPlayPauseTime > apiCooldown) {
           playPauseSong(playbackStateJson);
-          updateScreen(playbackStateJson);
           lastPlayPauseTime = currentTime;
       } else {
           Serial.println("API call ignored due to cooldown");
@@ -123,12 +128,12 @@ void loop() {
       if (currentTime - lastNextTime > apiCooldown) {
           nextSong();
           playbackStateJson = fetchPlaybackState(); // Get updated playback-state when song is changed
-          updateScreen(playbackStateJson);
           lastNextTime = currentTime;
       } else {
           Serial.println("API call ignored due to cooldown");
       }
   }
+
   
   /*
   tft.fillScreen(TFT_BLACK);

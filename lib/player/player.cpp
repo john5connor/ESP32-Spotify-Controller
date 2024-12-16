@@ -14,7 +14,7 @@ void previousSong() {
         if (httpCode == HTTP_CODE_OK) {
             Serial.println("Previous song");
         } else {
-            Serial.printf("HTTP request for PREVIOUS song failed with error: %s\n", http.errorToString(httpCode).c_str());
+            Serial.printf("HTTP request for PREVIOUS song failed with error: %d\n", httpCode);
         }
     }
     http.end();
@@ -26,18 +26,7 @@ void playPauseSong(String playbackStateJson) {
     deserializeJson(doc, playbackStateJson); 
 
     bool isPlaying = doc["is_playing"];
-
-    Serial.println("Is playing: ");
-    Serial.println(isPlaying);
-
-    String payload = R"({
-        "context_uri": "{CONTEXT_URI}",
-        "position_ms": {POSITION_MS}
-    })";
-
-    payload.replace(String("{CONTEXT_URI}"), String(doc["item"]["album"]["uri"].as<const char*>()));
-    payload.replace(String("{POSITION_MS}"), String(doc["progress_ms"].as<long>()));
-
+    
     HTTPClient http;
 
     if (isPlaying) {
@@ -51,15 +40,14 @@ void playPauseSong(String playbackStateJson) {
     http.addHeader("Authorization", "Bearer " + SPOTIFY_ACCESS_TOKEN);
     http.addHeader("Content-Type", "application/json");
 
-    uint8_t httpCode = http.PUT(payload);
-
-    if (httpCode == HTTP_CODE_OK) {
-        Serial.println("Play/Pause song");
+    int httpCode = http.PUT("{}");
+    if (httpCode == HTTP_CODE_NO_CONTENT || httpCode == HTTP_CODE_OK) {
+        Serial.println("Playback paused/resumed");
     } else {
-        Serial.printf("HTTP request for play/pause song failed with error: %d\n", httpCode);
+        Serial.printf("Failed to pause/resume playback: %d\n", httpCode);
     }
 
-    http.end();
+   http.end();
 }
 
 void nextSong() {
@@ -73,8 +61,22 @@ void nextSong() {
         if (httpCode == HTTP_CODE_OK) {
             Serial.println("Next song");
         } else {
-            Serial.printf("HTTP request for NEXT song failed with error: %s\n", http.errorToString(httpCode).c_str());
+            Serial.printf("HTTP request for NEXT song failed with error: %d\n", httpCode);
         }
     }
     http.end();
+}
+
+bool songChange(String lastSong, String playbackStateJson) {
+    StaticJsonDocument <50> doc;
+
+    deserializeJson(doc, playbackStateJson);
+
+    String currentSong = doc["item"]["name"];
+
+    if (currentSong != lastSong) {
+        return true;
+    } else {
+        return false;
+    }
 }

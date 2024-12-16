@@ -6,5 +6,6 @@
 void previousSong();
 void playPauseSong(String playbackStateJson);
 void nextSong();
+bool songChange(String lastSong, String playbackStateJson);
 
 #endif
