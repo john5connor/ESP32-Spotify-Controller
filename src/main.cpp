@@ -21,7 +21,6 @@ int scrollX;
 
 void updateScreen(String playbackStateJson);
 void displayJPEG();
-uint8_t fetchCount = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -54,14 +53,14 @@ void setup() {
 
   setupWifi(); //Setup WiFi connection with ESP32
 
-  Serial.println(playbackStateJson);
-  // The following two lines may be be used in the future when implementing the landing page.
-  // Currently unsure how it will be implemented.
-  //configureLandingPage();
-  //tft.drawString(IP_ADDRESS, 10, 10); 
+  requestUserAuthorization(); //Request user authorization from the Spotify API
 
-  
-  requestUserAuthorization();
+  configureLandingPage(); //Configure landing page for user to navigate to to authorize the app
+  tft.drawString("Type the following" , 10, 10);
+  tft.drawString("IP address into your", 10, 20);
+  tft.drawString("browser: ", 10, 30);
+  tft.drawString(IP_ADDRESS, 10, 40); 
+
   setupWebServerForAuth(); //Setup the web server
 
   while (!authComplete) { //Wait for the user to authorize the app
@@ -71,17 +70,7 @@ void setup() {
   requestAccessToken(spotifyCode); //Request an access token from the Spotify API
   parseAvailableDevices(fetchAvailableDevices());
 
-  playbackStateJson = fetchPlaybackState(); //Fetch the playback state from the Spotify API
-  lastFetchTime = millis();
-  Serial.println("Playback state json from setup code: " + playbackStateJson);
-
-  if (playbackStateJson == "") {
-    Serial.println("Playback state is empty, transferring playback to device");
-    transferPlayback(deviceId);
-  }
-
-  updateScreen(playbackStateJson);
-
+  //Set up the buttons
   pinMode(PREVIOUS_BUTTON_PIN, INPUT_PULLUP);
   pinMode(PLAY_PAUSE_BUTTON_PIN, INPUT_PULLUP);
   pinMode(NEXT_BUTTON_PIN, INPUT_PULLUP);

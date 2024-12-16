@@ -7,6 +7,7 @@
 String base64Encode(String str);
 
 String SPOTIFY_ACCESS_TOKEN;
+String authorizeUrl;
 
 void requestUserAuthorization(void) {
     String state = generateRandomString(16); //Generate a random string to protect against CSRF attacks
@@ -20,6 +21,7 @@ void requestUserAuthorization(void) {
     url += "&scope=" + String(SCOPE);
 
     //The link must be manually accessed by the user, the ESP32 is unable to emulate a browser and automatically follow the redirect
+    authorizeUrl = url;
     Serial.println("Click the following link to authorize with the Spotify API:");
     Serial.println(url);
 }

@@ -17,5 +17,6 @@ extern const char* SPOTIFY_API_URL;
 extern String SPOTIFY_ACCESS_TOKEN;
 extern const char* GRANT_TYPE;
 extern String deviceId;
+extern String authorizeUrl;
 
 #endif

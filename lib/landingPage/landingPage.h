@@ -1,4 +1,3 @@
-/*
 #ifndef LANDINGPAGE_H
 #define LANDINGPAGE_H
 #endif
@@ -11,4 +10,3 @@ extern String uri;
 void handleLandingPage(void);
 void handleSave(void);
 void configureLandingPage(void);
-*/

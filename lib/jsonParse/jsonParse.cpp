@@ -22,21 +22,23 @@ void doDeserializeJson(String json) {
 */
 
 void parseAccessToken(String response) {
-    Serial.println("Parsing access token: " + response);
     StaticJsonDocument<100> doc;
+
     deserializeJson(doc, response);
-    //const char* accessToken = doc["access_token"]; //Extract the access token from the JSON response
+
     if (doc["access_token"] == nullptr) {
         Serial.println("Access token is null");
     }
+
     SPOTIFY_ACCESS_TOKEN = String((const char*)doc["access_token"]);
 }
 
 void parseImageUrl(String playbackStateJson) {
     StaticJsonDocument<100> doc;
+
     deserializeJson(doc, playbackStateJson);
+
     imageUrl = (const char*)doc["item"]["album"]["images"][2]["url"];
-    Serial.println("Image url: " + imageUrl);
 }
 
 void parseArtists(String playbackStateJson) {
