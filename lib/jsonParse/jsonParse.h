@@ -7,6 +7,7 @@
 extern String imageUrl;
 extern String artists;
 extern String song;
+extern bool isPlaying;
 
 void doDeserializeJson(String json);
 void parseAccessToken(String response);
@@ -15,3 +16,4 @@ void parseArtists(String playbackStateJson);
 void parseSong(String playbackStateJson);
 void parseAvailableDevices(String devicesJson);
 String parseLastSong(String playbackStateJson);
+void parseIsPlaying(String playbackStateJson);

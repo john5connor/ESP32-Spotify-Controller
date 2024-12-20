@@ -55,9 +55,10 @@ String fetchPlaybackState() {
       if (httpCode == HTTP_CODE_OK) {
         response = https.getString();
         playbackStateJson = response;
+        parseIsPlaying(response);
       } else if (httpCode == HTTP_CODE_NO_CONTENT) {
         Serial.printf("No active playback session, using cached state.\n");
-        transferPlayback(deviceId);
+        //transferPlayback(deviceId);
         response = playbackStateJson;
       }
     } else {

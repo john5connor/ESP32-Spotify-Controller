@@ -1,8 +1,11 @@
 #include "mechanics.h"
 
-const uint8_t PREVIOUS_BUTTON_PIN = 25;
-const uint8_t PLAY_PAUSE_BUTTON_PIN = 26;
-const uint8_t NEXT_BUTTON_PIN = 27;
+const uint8_t PREVIOUS_BUTTON_PIN = 21;
+const uint8_t PLAY_PAUSE_BUTTON_PIN = 19;
+const uint8_t NEXT_BUTTON_PIN = 25;
+const uint8_t POTENTIOMETER_PIN = 33;
+
+uint16_t analogInputValue;
 
 bool previousButtonPressed(void) {
     //static unsigned long lastDebounceTime = 0;
@@ -94,3 +97,8 @@ bool nextButtonPressed(void) {
     return false;
 }
 
+uint16_t readAndMapVolumeValue(void) {
+    analogInputValue = map(analogRead(POTENTIOMETER_PIN), 0, 4095, 0, 100);
+
+    return analogInputValue;
+}

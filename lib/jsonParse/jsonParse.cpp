@@ -6,6 +6,7 @@ String imageUrl;
 String artists;
 String song;
 String deviceId;
+bool isPlaying;
 
 /*
 void doDeserializeJson(String json) {
@@ -90,4 +91,10 @@ String parseLastSong(String playbackStateJson) {
     StaticJsonDocument<50> doc;
     deserializeJson(doc, playbackStateJson);
     return String((const char*)doc["item"]["name"]);
+}
+
+void parseIsPlaying(String playbackStateJson) {
+    StaticJsonDocument<50> doc;
+    deserializeJson(doc, playbackStateJson);
+    isPlaying = doc["is_playing"];
 }

@@ -11,14 +11,12 @@
 #include <TJpg_Decoder.h>
 
 TFT_eSPI tft = TFT_eSPI(); // Create an instance of TFT_eSPI
-//TFT_eSprite scroller = TFT_eSprite(&tft); // Create an instance of TFT_eSprite
+//TFT_eSprite play = TFT_eSprite(&tft); // Create an instance of TFT_eSprite for the play symbol
+TFT_eSprite playPauseImg = TFT_eSprite(&tft); // Create an instance of TFT_eSprite for the pause symbol
+int spriteX = 15;
+int spriteY = 15;
 
-/*
-const char* message = "Text message for scroll";
-int msgWidth;
-int scrollX;
-*/
-
+void playBox(int x, int y, int spriteX, int spriteY, bool isPlaying);
 void updateScreen(String playbackStateJson);
 void displayJPEG();
 
@@ -33,23 +31,6 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
   tft.setTextFont(1);
   tft.setTextSize(1);
-  /*
-  tft.setTextWrap(false);
-
-  msgWidth = tft.textWidth(message);
-
-  scroller.setColorDepth(8);
-  scroller.createSprite(msgWidth * 2, tft.fontHeight());
-  scroller.fillSprite(TFT_BLACK);
-  scroller.setTextColor(TFT_WHITE, TFT_BLACK);
-  scroller.setTextDatum(TL_DATUM);
-
-  scroller.drawString(message, 0, 0);
-  scroller.drawString(message, msgWidth, 0);
-
-  scrollX = 0;
-  */
-
 
   setupWifi(); //Setup WiFi connection with ESP32
 
@@ -59,7 +40,7 @@ void setup() {
   tft.drawString("Type the following" , 10, 10);
   tft.drawString("IP address into your", 10, 20);
   tft.drawString("browser: ", 10, 30);
-  tft.drawString(IP_ADDRESS, 10, 40); 
+  tft.drawString(IP_ADDRESS, 10, 50); 
 
   setupWebServerForAuth(); //Setup the web server
 
@@ -74,12 +55,16 @@ void setup() {
   pinMode(PREVIOUS_BUTTON_PIN, INPUT_PULLUP);
   pinMode(PLAY_PAUSE_BUTTON_PIN, INPUT_PULLUP);
   pinMode(NEXT_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(POTENTIOMETER_PIN, INPUT_PULLUP);
 }
 
 void loop() {
-  static unsigned long lastPlayPauseTime = 0;
+  static unsigned long lastPlayPauseTime = 0; // Cooldown period in milliseconds
   static unsigned long lastPreviousTime = 0;
   static unsigned long lastNextTime = 0;
+  static unsigned long lastVolumeChangeTime = 0;
+
+  static uint16_t lastVolumeValue = 100; // previously
   static String lastSong = "";
   const unsigned long apiCooldown = 500; // Cooldown period in milliseconds
 
@@ -88,7 +73,14 @@ void loop() {
   if (songChange(lastSong, playbackStateJson)) {
     updateScreen(playbackStateJson);
   }
-   
+
+  currentVolumeValue = readAndMapVolumeValue();
+
+  if (abs(lastVolumeValue - currentVolumeValue) > 10) {
+    putVolumeChange(currentVolumeValue); //Make request to spotify to change the volume
+    lastVolumeValue = currentVolumeValue; //Update the last volume value
+  }
+
   lastSong = parseLastSong(playbackStateJson);
 
   if (previousButtonPressed()) {
@@ -106,6 +98,7 @@ void loop() {
       unsigned long currentTime = millis();
       if (currentTime - lastPlayPauseTime > apiCooldown) {
           playPauseSong(playbackStateJson);
+          playBox(tft.width() / 2 - 10, tft.height() - 30, spriteX, spriteY, isPlaying);
           lastPlayPauseTime = currentTime;
       } else {
           Serial.println("API call ignored due to cooldown");
@@ -122,21 +115,7 @@ void loop() {
           Serial.println("API call ignored due to cooldown");
       }
   }
-
   
-  /*
-  tft.fillScreen(TFT_BLACK);
-  int spriteY = (tft.height() - tft.fontHeight()) / 2; // Vertically center the sprite
-
-  scroller.pushSprite(-scrollX, spriteY);
-
-  scrollX++;
-  if (scrollX >= msgWidth) {
-    scrollX = 0;
-  }
-  
-  delay(25);
-  */
 }
 
 bool outputTFT(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap) {
@@ -158,6 +137,27 @@ void displayJPEG() {
   } 
 }
 
+void playBox(int x, int y, int spritex, int spritey, bool isPlaying) {
+  Serial.println("isPlaying in playBox: " + String(isPlaying));
+  playPauseImg.createSprite(spritex, spritey);
+
+  if (isPlaying) {
+    playPauseImg.fillSprite(TFT_BLACK);
+
+    uint8_t rectWidth = spritex / 5;
+    uint8_t rectSpacing = spritex / 8;
+
+    playPauseImg.fillRect(rectSpacing, 0, spritey / 3, spritey, TFT_WHITE);
+    playPauseImg.fillRect(spritex - rectWidth - rectSpacing, 0, spritey / 3, spritey, TFT_WHITE);
+  } else {
+    playPauseImg.fillSprite(TFT_BLACK);
+    playPauseImg.fillTriangle(0, 0, 0, spritex, spritey, spritey / 2, TFT_WHITE);
+  }
+
+  playPauseImg.pushSprite(x, y);
+  playPauseImg.deleteSprite();
+} 
+
 void updateScreen(String playbackStateJson) {
 
   //parseAvailableDevices(fetchAvailableDevices());
@@ -171,7 +171,7 @@ void updateScreen(String playbackStateJson) {
   parseSong(playbackStateJson);
   parseArtists(playbackStateJson);
   
-  //TODO: Put this functionality in the loop so it updates the display when the song is changed
   tft.drawString(song, (tft.width() / 2) - (song.length() / 2) * 6, tft.height() - 55);
   tft.drawString(artists, (tft.width() / 2) - (artists.length() / 2) * 6, tft.height() - 43);
+  playBox(tft.width() / 2 - 10, tft.height() - 30, spriteX, spriteY, isPlaying);
 }

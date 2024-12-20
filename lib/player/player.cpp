@@ -1,7 +1,10 @@
 #include "player.h"
 #include "config.h"
+#include "jsonParse.h"
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
+
+uint16_t currentVolumeValue;
 
 void previousSong() {
     const String url = "https://api.spotify.com/v1/me/player/previous";
@@ -25,16 +28,19 @@ void playPauseSong(String playbackStateJson) {
 
     deserializeJson(doc, playbackStateJson); 
 
-    bool isPlaying = doc["is_playing"];
+    parseIsPlaying(playbackStateJson);
+    Serial.println("isPlaying in playPauseSong: " + String(isPlaying));
     
     HTTPClient http;
 
     if (isPlaying) {
         http.begin("https://api.spotify.com/v1/me/player/pause");
         Serial.println("Pausing song");
+        isPlaying = false;
     } else {
         http.begin("https://api.spotify.com/v1/me/player/play");
         Serial.println("Playing song");
+        isPlaying = true;
     }
 
     http.addHeader("Authorization", "Bearer " + SPOTIFY_ACCESS_TOKEN);
@@ -67,6 +73,24 @@ void nextSong() {
     http.end();
 }
 
+void putVolumeChange(uint16_t mappedInputValue) {
+    Serial.println("Changing volume to: " + String(mappedInputValue));
+    const String url = "https://api.spotify.com/v1/me/player/volume?volume_percent=" + String(mappedInputValue);
+
+    HTTPClient http;
+    if (http.begin(url)) {
+        http.addHeader("Authorization", "Bearer " + SPOTIFY_ACCESS_TOKEN);
+
+        uint8_t httpCode = http.PUT("{}");
+        if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_NO_CONTENT) {
+            Serial.println("Volume changed");
+        } else {
+            Serial.printf("HTTP request for changing volume failed with error: %d\n", httpCode);
+        }
+    }
+    http.end();
+}
+
 bool songChange(String lastSong, String playbackStateJson) {
     StaticJsonDocument <50> doc;
 
@@ -79,4 +103,14 @@ bool songChange(String lastSong, String playbackStateJson) {
     } else {
         return false;
     }
+}
+
+uint16_t volumeChange(uint16_t lastVolumeValue, uint16_t currentVolumeValue) {
+
+    if (currentVolumeValue != lastVolumeValue) {
+        return currentVolumeValue;
+    } else {
+        return lastVolumeValue;
+    }
+    
 }

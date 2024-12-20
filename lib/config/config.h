@@ -18,5 +18,7 @@ extern String SPOTIFY_ACCESS_TOKEN;
 extern const char* GRANT_TYPE;
 extern String deviceId;
 extern String authorizeUrl;
+extern uint16_t analogInputValue;
+extern uint16_t currentVolumeValue;
 
 #endif
